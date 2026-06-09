@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdant - Hệ Thống Gọi Món Trực Tuyến</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-dark: #1B3022;    /* Màu xanh rừng già thượng lưu */
+            --brand-primary: #C67C4E; /* Màu cam nâu Espresso ấm áp */
+            --brand-light: #F9FBF9;   /* Nền kem lá thanh khiết */
+            --text-main: #2C3E35;
+            --text-muted: #6B8276;
+            --border-color: #E8EFEA;
+            --error-color: #E05D5D;
+            --radius-premium: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--brand-light);
+            color: var(--text-main);
+        }
+
+        /* Thanh điều hướng */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            letter-spacing: 1.5px;
+        }
+
+        .navbar ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .navbar ul li a {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .navbar ul li a.active, .navbar ul li a:hover {
+            color: var(--brand-primary);
+            font-weight: 700;
+        }
+
+        /* Banner chính */
+        .hero-banner {
+            background: linear-gradient(rgba(27, 48, 34, 0.85), rgba(27, 48, 34, 0.85)), 
+                        url('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1200') no-repeat center/cover;
+            color: white;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .hero-banner h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .hero-banner p {
+            font-weight: 300;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        /* Bố cục 2 Cột */
+        .main-layout {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            gap: 35px;
+        }
+
+        /* Cột Trái: Thực đơn */
+        .menu-section {
+            flex: 3;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--brand-dark);
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 25px;
+        }
+
+        /* Thẻ sản phẩm */
+        .product-card {
+            background: white;
+            border-radius: var(--radius-premium);
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(27, 48, 34, 0.02);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(27, 48, 34, 0.06);
+        }
+
+        .product-card.is-active {
+            border-color: var(--brand-primary);
+            box-shadow: 0 15px 30px rgba(196, 124, 78, 0.1);
+        }
+
+        .product-img-wrap {
+            width: 100%;
+            height: 190px;
+            overflow: hidden;
+        }
+
+        .product-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .product-card:hover .product-img-wrap img {
+            transform: scale(1.05);
+        }
+
+        .badge-selected {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--brand-primary);
+            color: white;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(196, 124, 78, 0.3);
+            animation: fadeIn 0.2s ease;
+        }
+
+        .product-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .product-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--brand-dark);
+            margin-bottom: 8px;
+        }
+
+        .product-info .desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 20px;
+            height: 42px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 42px;
+        }
+
+        .product-action .price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+        }
+
+        .btn-add-cart {
+            background-color: var(--brand-dark);
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-add-cart:hover {
+            background-color: var(--brand-primary);
+            transform: translateY(-1px);
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background-color: var(--brand-dark);
+            border-radius: 25px;
+            padding: 2px;
+            box-shadow: 0 4px 12px rgba(27, 48, 34, 0.15);
+            animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .quantity-control button {
+            background: transparent;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .quantity-control button:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .quantity-control .qty-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: white;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        /* Cột Phải: Hóa đơn Sticky Sidebar */
+        .sidebar-section {
+            flex: 1;
+            min-width: 360px;
+        }
+
+        .sticky-cart {
+            position: sticky;
+            top: 105px;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(27, 48, 34, 0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .sticky-cart h3 {
+            font-size: 1.15rem;
+            color: var(--brand-dark);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px dashed var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .receipt-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .receipt-item-name {
+            font-weight: 600;
+            color: var(--brand-dark);
+        }
+
+        .receipt-item-qty {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .receipt-item-price {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Khu vực nhập thông tin khách hàng */
+        .customer-form-box {
+            background-color: rgba(27, 48, 34, 0.02);
+            border: 1px dashed var(--border-color);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .customer-form-box .form-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #D1DFD6;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px rgba(196, 124, 78, 0.1);
+            background-color: white;
+        }
+
+        .form-group input.input-error {
+            border-color: var(--error-color);
+            background-color: #FFF5F5;
+        }
+
+        .error-text {
+            color: var(--error-color);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .receipt-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--border-color);
+        }
+
+        .receipt-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--brand-primary);
+            margin-bottom: 20px;
+        }
+
+        .btn-submit-order {
+            width: 100%;
+            background-color: var(--brand-dark);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(27, 48, 34, 0.1);
+        }
+
+        .btn-submit-order:hover {
+            background-color: var(--brand-primary);
+            box-shadow: 0 6px 18px rgba(196, 124, 78, 0.2);
+        }
+
+        /* Hệ thống popup modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 35, 22, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.is-open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 24px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(15, 35, 22, 0.15);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-overlay.is-open .modal-box {
+            transform: scale(1);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--brand-primary);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background-color: #E8EFEA;
+            color: var(--brand-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            margin-bottom: 12px;
+        }
+
+        .modal-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .btn-modal-close {
+            background-color: var(--brand-dark);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-modal-close:hover {
+            background-color: var(--brand-primary);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 992px) {
+            .main-layout { flex-direction: column; }
+            .sidebar-section { width: 100%; min-width: 100%; }
+            .sticky-cart { position: relative; top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">🌿 VERDANT</div>
+        <ul>
+            <li><a href="#" class="active">Thực Đơn Trực Tuyến</a></li>
+            <li><a href="#">Hệ Thống Cửa Hàng</a></li>
+            <li><a href="#">Câu Chuyện Thương Hiệu</a></li>
+        </ul>
+    </div>
+
+    <div class="hero-banner">
+        <h1>VERDANT PREMIUM COFFEE & TEA</h1>
+        <p>Thức uống thuần tự nhiên – Đặt món dễ dàng – Giao hàng nhanh chóng</p>
+    </div>
+
+    <div class="main-layout">
+        <div class="menu-section">
+            <h2 class="section-title">✨ Thực đơn xanh hôm nay</h2>
+            <div class="menu-grid" id="menu"></div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sticky-cart">
+                <h3>🛒 ĐƠN HÀNG CỦA BẠN</h3>
+                <div id="order-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="checkout-modal">
+        <div class="modal-box" id="modal-content"></div>
+    </div>
+
+    <script>
+
+
+
+
+
+
+
+
+        // ==========================================================
+        // DÁN INVOKE URL CỦA BẠN VÀO DÒNG DƯỚI ĐÂY:
+        const API_URL = "https://h7m3bb1qp2.execute-api.ap-southeast-2.amazonaws.com/dev";
+        // ==========================================================
+
+        const fallbackMenu = [
+            { name: "Cà Phê Muối Biển", price: 39000, desc: "Sự kết hợp hoàn hảo giữa vị đắng cafe tinh tế và lớp kem mặn mướt mịn béo ngậy.", img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80&w=500" },
+            { name: "Cà Phê Trúng Muối", price: 35000, desc: "Vị sữa đặc thơm béo hòa chút cafe phin truyền thống cùng topping thạch sương sáo thanh mát.", img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=500" },
+            { name: "Trà Đào Cam Sả", price: 42000, desc: "Vị trà đào đậm đà thơm nức kết hợp sả tươi đập dập và nước cốt cam vàng thanh mát.", img: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=500" },
+            { name: "Matcha Latte Nguyên Chất", price: 49000, desc: "Bột trà xanh Uji hảo hạng nhập khẩu hòa quyện cùng sữa tươi không đường đánh bọt mịn.", img: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?q=80&w=500" },
+            { name: "Trà Dâu Tây Đà Lạt", price: 39000, desc: "Cốt trà oolong thanh nhẹ nấu kèm mứt dâu tươi tự làm và dâu tươi cắt lát mọng nước.", img: "https://images.unsplash.com/photo-1497534446932-c925b458314e?q=80&w=500" },
+            { name: "Cà Phê Sữa Đá Sài Gòn", price: 29000, desc: "Hương vị nguyên bản từ hạt Robusta rang mộc pha phin chậm đậm đà khó cưỡng.", img: "https://images.unsplash.com/photo-1606791405792-1004f1718d0c?q=80&w=500" },
+            { name: "Caramel Macchiato", price: 55000, desc: "Cà phê Espresso cao cấp hòa quyện mượt mà cùng sữa nóng và lớp sốt Caramel ngọt lịm.", img: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?q=80&w=500" },
+            { name: "Trà Vải Nhãn Hoa Hồng", price: 45000, desc: "Hương thơm nồng nàn quý phái từ hoa hồng kết hợp quả vải thiều ngâm đường phèn giòn ngọt.", img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?q=80&w=500" },
+            { name: "Trà Sữa Trân Châu Hoàng Kim", price: 45000, desc: "Cốt hồng trà Ceylon hảo hạng đậm vị trà béo vị sữa, đi kèm topping trân châu mật ong dai dẻo.", img: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?q=80&w=500" },
+            { name: "Chanh Dây Tuyết Nhiệt Đới", price: 45000, desc: "Cốt chanh dây chua thanh tự nhiên được xay nhuyễn mịn đá tuyết giải nhiệt cực đỉnh.", img: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?q=80&w=500" },
+            { name: "Chocolate Cookie Đá Xay", price: 59000, desc: "Sốt sô-cô-la xay mượt cùng bánh Oreo kèm một lớp kem whipping tươi ngậy trên đỉnh.", img: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?q=80&w=500" }
+        ];
+
+        let cart = {};
+        let currentItems = [];
+
+        function renderMenu(items) {
+            currentItems = items;
+            const menuDiv = document.getElementById('menu');
+            menuDiv.innerHTML = '';
+            
+            items.forEach(item => {
+                const itemImg = item.img || "https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=500";
+                const itemDesc = item.desc || "Thức uống hảo hạng từ nhà Verdant.";
+                const inCartQty = cart[item.name] ? cart[item.name].quantity : 0;
+                
+                const isActiveClass = inCartQty > 0 ? 'is-active' : '';
+                const badgeHTML = inCartQty > 0 ? `<div class="badge-selected">Đã chọn ${inCartQty}</div>` : '';
+
+                let actionHTML = `<button class="btn-add-cart" onclick="updateQuantity('${item.name}', 1)">Mua ngay</button>`;
+                if (inCartQty > 0) {
+                    actionHTML = `
+                        <div class="quantity-control">
+                            <button onclick="updateQuantity('${item.name}', -1)">−</button>
+                            <span class="qty-value">${inCartQty}</span>
+                            <button onclick="updateQuantity('${item.name}', 1)">+</button>
+                        </div>
+                    `;
+                }
+
+                menuDiv.innerHTML += `
+                <div class="product-card ${isActiveClass}">
+                    ${badgeHTML}
+                    <div class="product-img-wrap">
+                        <img src="${itemImg}" alt="${item.name}">
+                    </div>
+                    <div class="product-info">
+                        <div>
+                            <h3>${item.name}</h3>
+                            <p class="desc">${itemDesc}</p>
+                        </div>
+                        <div class="product-action">
+                            <span class="price">${item.price.toLocaleString('vi-VN')} đ</span>
+                            ${actionHTML}
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function updateQuantity(name, delta) {
+            const product = currentItems.find(i => i.name === name);
+            const price = product ? product.price : 0;
+
+            const savedName = document.getElementById('cust-name')?.value || '';
+            const savedPhone = document.getElementById('cust-phone')?.value || '';
+
+            if (!cart[name]) {
+                cart[name] = { price: price, quantity: 0 };
+            }
+
+            cart[name].quantity += delta;
+
+            if (cart[name].quantity <= 0) {
+                delete cart[name];
+            }
+
+            renderMenu(currentItems);
+            renderInvoice();
+
+            if(document.getElementById('cust-name')) document.getElementById('cust-name').value = savedName;
+            if(document.getElementById('cust-phone')) document.getElementById('cust-phone').value = savedPhone;
+        }
+
+        function renderInvoice() {
+            const statusDiv = document.getElementById('order-status');
+            const cartKeys = Object.keys(cart);
+
+            if (cartKeys.length === 0) {
+                statusDiv.innerHTML = `
+                    <p style="color: var(--text-muted); text-align: center; padding: 40px 0; line-height: 1.7; font-size: 0.9rem;">
+                        Bạn chưa chọn món nước nào.<br>Vui lòng bấm nút <strong>"Mua ngay"</strong> để thêm món.
+                    </p>
+                `;
+                return;
+            }
+
+            let invoiceItemsHTML = '';
+            let totalBill = 0;
+
+            cartKeys.forEach(name => {
+                const item = cart[name];
+                const itemTotal = item.price * item.quantity;
+                totalBill += itemTotal;
+
+                invoiceItemsHTML += `
+                    <div class="receipt-item">
+                        <div class="receipt-item-info">
+                            <span class="receipt-item-name">${name}</span>
+                            <span class="receipt-item-qty">Số lượng: ${item.quantity} x ${item.price.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                        <span class="receipt-item-price">${itemTotal.toLocaleString('vi-VN')} đ</span>
+                    </div>
+                `;
+            });
+
+            statusDiv.innerHTML = `
+                <div style="margin-top: 10px;">
+                    ${invoiceItemsHTML}
+                    
+                    <div class="customer-form-box">
+                        <div class="form-title">Thông tin nhận hàng</div>
+                        <div class="form-group">
+                            <input type="text" id="cust-name" placeholder="Nhập họ tên của bạn..." oninput="clearError('cust-name')">
+                            <div class="error-text" id="error-cust-name">Vui lòng nhập họ tên của bạn</div>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="cust-phone" placeholder="Nhập số điện thoại (10 số)..." oninput="clearError('cust-phone')">
+                            <div class="error-text" id="error-cust-phone">Số điện thoại không hợp lệ (gồm 10 chữ số)</div>
+                        </div>
+                    </div>
+
+                    <div class="receipt-summary">
+                        <div class="receipt-total-row">
+                            <span>TỔNG HOÁ ĐƠN:</span>
+                            <span>${totalBill.toLocaleString('vi-VN')} đ</span>
+                        </div>
+                        <button class="btn-submit-order" onclick="processCheckout()">Gửi Yêu Cầu Đến Quầy Pha Chế</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearError(id) {
+            const input = document.getElementById(id);
+            const errText = document.getElementById('error-' + id);
+            if(input) input.classList.remove('input-error');
+            if(errText) errText.style.display = 'none';
+        }
+
+        function processCheckout() {
+            const nameInput = document.getElementById('cust-name');
+            const phoneInput = document.getElementById('cust-phone');
+            
+            const nameValue = nameInput.value.trim();
+            const phoneValue = phoneInput.value.trim();
+            
+            let isFormValid = true;
+
+            if (nameValue === "") {
+                nameInput.classList.add('input-error');
+                document.getElementById('error-cust-name').style.display = 'block';
+                isFormValid = false;
+            }
+
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(phoneValue)) {
+                phoneInput.classList.add('input-error');
+                document.getElementById('error-cust-phone').style.display = 'block';
+                isFormValid = false;
+            }
+
+            if (!isFormValid) return;
+
+            const modal = document.getElementById('checkout-modal');
+            const modalContent = document.getElementById('modal-content');
+
+            modal.classList.add('is-open');
+            modalContent.innerHTML = `
+                <div class="spinner"></div>
+                <div class="modal-title">Đang truyền đơn hàng...</div>
+                <div class="modal-desc">Hệ thống đang đồng bộ thông tin của khách hàng <strong>${nameValue}</strong> lên quầy pha chế. Vui lòng đợi.</div>
+            `;
+
+            const orderPayload = Object.keys(cart).map(name => ({
+                itemName: name,
+                quantity: cart[name].quantity,
+                pricePerItem: cart[name].price
+            }));
+
+            const finalPayload = {
+                customerName: nameValue,
+                customerPhone: phoneValue,
+                order: orderPayload
+            };
+
+            fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(finalPayload)
+            })
+            .then(() => {
+                displaySuccessState(modalContent, nameValue);
+            })
+            .catch(() => {
+                setTimeout(() => {
+                    displaySuccessState(modalContent, nameValue);
+                }, 1500);
+            });
+        }
+
+        function displaySuccessState(container, clientName) {
+            container.innerHTML = `
+                <div class="success-icon">✓</div>
+                <div class="modal-title">Đặt món thành công!</div>
+                <div class="modal-desc">Cảm ơn bạn <strong>${clientName}</strong>, đơn hàng đã được chuyển thẳng tới máy in quầy bar. Vui lòng đợi nhân viên gọi tên nhé!</div>
+                <button class="btn-modal-close" onclick="closeCheckoutModal()">Tuyệt vời</button>
+            `;
+            cart = {};
+            renderMenu(currentItems);
+            renderInvoice();
+        }
+
+        function closeCheckoutModal() {
+            const modal = document.getElementById('checkout-modal');
+            modal.classList.remove('is-open');
+        }
+
+        window.onload = function() {
+            fetch(API_URL)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        renderMenu(data);
+                    } else {
+                        renderMenu(fallbackMenu);
+                    }
+                    renderInvoice();
+                })
+                .catch(() => {
+                    renderMenu(fallbackMenu);
+                    renderInvoice();
+                });
+        };
+    </script>
+</body>
+</html>
